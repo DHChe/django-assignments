@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Awesome Todo List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .todo-item {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .todo-item:hover {
+            transform: translateX(8px);
+            background-color: #f1f5f9;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    },
+                    animation: {
+                        blob: "blob 7s infinite",
+                    },
+                    keyframes: {
+                        blob: {
+                            "0%": { transform: "translate(0px, 0px) scale(1)" },
+                            "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+                            "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+                            "100%": { transform: "translate(0px, 0px) scale(1)" },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden text-slate-800">
+    
+    <!-- Decorative background elements -->
+    <div class="fixed top-[-10%] left-[-10%] w-96 h-96 bg-brand-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob pointer-events-none"></div>
+    <div class="fixed top-[20%] right-[-5%] w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob pointer-events-none" style="animation-delay: 2s;"></div>
+    <div class="fixed bottom-[-10%] left-[20%] w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob pointer-events-none" style="animation-delay: 4s;"></div>
+
+    <div class="max-w-3xl mx-auto relative z-10 space-y-8">
+        <!-- Header Section -->
+        <header class="text-center mb-12">
+            <div class="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-sm mb-5 ring-1 ring-slate-900/5 transform transition hover:scale-105 duration-300">
+                <i class="fa-solid fa-layer-group text-2xl text-brand-600"></i>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-3">
+                My Workspace
+            </h1>
+            <p class="text-lg text-slate-500 max-w-xl mx-auto font-light">
+                Organize your tasks, boost your productivity, and stay on top of your goals.
+            </p>
+        </header>
+
+        <!-- Main Card -->
+        <main class="glass-card rounded-3xl overflow-hidden shadow-xl ring-1 ring-slate-900/5">
+            <!-- Card Header -->
+            <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white/60 backdrop-blur-md">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-xl font-bold text-slate-800">Tasks</h2>
+                    <span class="bg-brand-100 text-brand-700 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                        {{ data|length }}
+                    </span>
+                </div>
+                <!-- Optional Date Display -->
+                <div class="text-sm font-medium text-slate-500 bg-slate-100/50 px-3 py-1.5 rounded-lg">
+                    <i class="fa-regular fa-calendar-check mr-1.5 text-brand-500"></i> Todo List
+                </div>
+            </div>
+
+            <!-- Task List -->
+            <ul class="divide-y divide-slate-100 bg-white/40">
+                {% if data %}
+                    {% for item in data %}
+                    <li class="todo-item group cursor-pointer relative" onclick="window.location.href='{% url 'todo_detail' item.id %}'">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="px-8 py-5 flex items-center justify-between">
+                            <div class="flex items-center gap-4 flex-1">
+                                <!-- Checkbox Circle -->
+                                <div class="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center group-hover:border-brand-500 transition-colors bg-white shadow-sm">
+                                    <i class="fa-solid fa-check text-[10px] text-transparent group-hover:text-brand-500 transition-colors"></i>
+                                </div>
+                                
+                                <!-- Task Title -->
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[1.05rem] font-medium text-slate-700 group-hover:text-slate-900 truncate transition-colors">
+                                        {{ item.title }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Right Arrow / Action -->
+                            <div class="ml-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0 duration-300">
+                                <div class="w-9 h-9 rounded-full bg-white shadow-sm ring-1 ring-slate-900/5 flex items-center justify-center group-hover:bg-brand-50">
+                                    <i class="fa-solid fa-arrow-right text-brand-600 text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <!-- Empty State -->
+                    <div class="px-8 py-20 text-center flex flex-col items-center justify-center">
+                        <div class="w-24 h-24 bg-gradient-to-tr from-brand-50 to-purple-50 rounded-full flex items-center justify-center mb-5 ring-1 ring-slate-900/5 shadow-inner">
+                            <i class="fa-regular fa-face-smile-wink text-4xl text-brand-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2">All caught up!</h3>
+                        <p class="text-slate-500 max-w-sm mx-auto leading-relaxed">You have no tasks pending. Enjoy your free time or add a new task to get started.</p>
+                        
+                        <div class="mt-8">
+                            <span class="inline-flex items-center justify-center px-4 py-2 border border-slate-200 border-dashed rounded-lg text-sm text-slate-400">
+                                List is empty
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
+            </ul>
+        </main>
+    </div>
+</body>
+</html>
