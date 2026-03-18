@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 from todo.models import Todo
 from django.http import Http404
 
@@ -9,6 +10,7 @@ def todo_list(request):
     return render(request, "todo_list.html", {"data": result})
 
 
+@login_required
 def todo_detail(request, todo_id):
     try:
         todo = Todo.objects.get(id=todo_id)
