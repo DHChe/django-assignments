@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Awesome Todo List{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .todo-item {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .todo-item:hover {
+            transform: translateX(8px);
+            background-color: #f1f5f9;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    },
+                    animation: {
+                        blob: "blob 7s infinite",
+                    },
+                    keyframes: {
+                        blob: {
+                            "0%": { transform: "translate(0px, 0px) scale(1)" },
+                            "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+                            "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+                            "100%": { transform: "translate(0px, 0px) scale(1)" },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden text-slate-800 {% block body_class %}{% endblock %}">
+    <!-- Decorative background elements -->
+    <div class="fixed top-[-10%] left-[-10%] w-96 h-96 bg-brand-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob pointer-events-none"></div>
+    <div class="fixed top-[20%] right-[-5%] w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob pointer-events-none" style="animation-delay: 2s;"></div>
+    <div class="fixed bottom-[-10%] left-[20%] w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob pointer-events-none" style="animation-delay: 4s;"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 z-20 mb-8">
+        <div class="max-w-3xl mx-auto px-4 py-4 rounded-2xl bg-white/80 backdrop-blur-md shadow-sm ring-1 ring-slate-900/5">
+            <div class="flex items-center justify-between">
+                <a href="{% url 'todo_list' %}" class="flex items-center gap-2 text-slate-800 hover:text-brand-600 transition-colors">
+                    <i class="fa-solid fa-layer-group text-xl"></i>
+                    <span class="font-bold">My Workspace</span>
+                </a>
+                <div class="flex items-center gap-3">
+                    {% if user.is_authenticated %}
+                        <span class="text-sm font-medium text-slate-600">
+                            <i class="fa-regular fa-user mr-1"></i>{{ user.username }}
+                        </span>
+                        <form action="{% url 'logout' %}" method="post" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors cursor-pointer">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                로그아웃
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'signup' %}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors">
+                            <i class="fa-solid fa-user-plus"></i>
+                            회원가입
+                        </a>
+                        <a href="{% url 'login' %}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-slate-900 rounded-full hover:bg-slate-800 transition-colors">
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                            로그인
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+</body>
+</html>

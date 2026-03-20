@@ -19,12 +19,16 @@ from django.contrib.auth.views import LogoutView
 from django.urls import path, include
 from todo.views import todo_list, todo_detail
 from users.views import login as login_view, signup
+from todo.views import todo_create, todo_update, todo_delete
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("todo/", todo_list, name="todo_list"),
+    path("todo/create/", todo_create, name="todo_create"),
     path("todo/<int:todo_id>/", todo_detail, name="todo_detail"),
+    path("todo/<int:todo_id>/update/", todo_update, name="todo_update"),
+    path("todo/<int:todo_id>/delete/", todo_delete, name="todo_delete"),
     path("accounts/login/", login_view, name="login"),
     path("accounts/logout/", LogoutView.as_view(), name="logout"),
     path("accounts/signup/", signup, name="signup"),
