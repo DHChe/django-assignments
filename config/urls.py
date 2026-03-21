@@ -24,6 +24,7 @@ from todo.views import todo_create, todo_update, todo_delete
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("cbv/", include("todo.urls")),
     path("todo/", todo_list, name="todo_list"),
     path("todo/create/", todo_create, name="todo_create"),
     path("todo/<int:todo_id>/", todo_detail, name="todo_detail"),

@@ -33,7 +33,7 @@
                     <div class="text-sm font-medium text-slate-500 bg-slate-100/50 px-3 py-1.5 rounded-lg">
                         <i class="fa-regular fa-calendar-check mr-1.5 text-brand-500"></i> Todo List
                     </div>
-                    <a href="{% url 'todo_create' %}" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800">
+                    <a href="{% url 'cbv_todo_create' %}" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800">
                         <i class="fa-solid fa-plus"></i>
                         New Task
                     </a>
@@ -44,7 +44,7 @@
             <ul class="divide-y divide-slate-100 bg-white/40">
                 {% if data %}
                     {% for item in data %}
-                    <li class="todo-item group cursor-pointer relative" onclick="window.location.href='{% url 'todo_detail' item.id %}'">
+                    <li class="todo-item group cursor-pointer relative" onclick="window.location.href='{% url 'cbv_todo_detail' item.pk %}'">
                         <div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <div class="px-8 py-5 flex items-center justify-between">
                             <div class="flex items-center gap-4 flex-1">
