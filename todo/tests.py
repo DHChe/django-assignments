@@ -269,3 +269,215 @@ class TodoUserJourneyTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
         self.assertTrue(Todo.objects.filter(pk=self.other_todo.pk).exists())
+
+
+class TodoCbvJourneyTests(TestCase):
+    """CBV routes (`cbv/` prefix, `cbv_todo_*` names)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = User.objects.create_user(
+            username="cbv_owner",
+            password="StrongPass123!",
+        )
+        cls.other_user = User.objects.create_user(
+            username="cbv_other",
+            password="StrongPass123!",
+        )
+        cls.superuser = User.objects.create_superuser(
+            username="cbv_admin",
+            password="StrongPass123!",
+            email="admin@example.com",
+        )
+        cls.owner_todo = Todo.objects.create(
+            title="CBV 주간 회의",
+            description="회의록 정리",
+            start_date=date(2026, 3, 19),
+            end_date=date(2026, 3, 20),
+            user=cls.owner,
+        )
+        cls.other_todo = Todo.objects.create(
+            title="CBV 타인 일정",
+            description="열람 금지",
+            start_date=date(2026, 3, 19),
+            end_date=date(2026, 3, 21),
+            user=cls.other_user,
+        )
+
+    def login(self, *, username="cbv_owner", password="StrongPass123!"):
+        self.client.login(username=username, password=password)
+
+    def test_protected_cbv_routes_redirect_anonymous_users(self):
+        detail_url = reverse("cbv_todo_detail", kwargs={"pk": self.owner_todo.pk})
+        update_url = reverse("cbv_todo_update", kwargs={"pk": self.owner_todo.pk})
+        delete_url = reverse("cbv_todo_delete", kwargs={"pk": self.owner_todo.pk})
+
+        self.assertRedirects(
+            self.client.get(reverse("cbv_todo_list")),
+            f"{reverse('login')}?next={reverse('cbv_todo_list')}",
+        )
+        self.assertRedirects(
+            self.client.get(reverse("cbv_todo_create")),
+            f"{reverse('login')}?next={reverse('cbv_todo_create')}",
+        )
+        self.assertRedirects(
+            self.client.get(detail_url),
+            f"{reverse('login')}?next={detail_url}",
+        )
+        self.assertRedirects(
+            self.client.get(update_url),
+            f"{reverse('login')}?next={update_url}",
+        )
+        self.assertRedirects(
+            self.client.get(delete_url),
+            f"{reverse('login')}?next={delete_url}",
+        )
+
+    def test_authenticated_user_sees_only_own_todos_on_cbv_list(self):
+        self.login()
+
+        response = self.client.get(reverse("cbv_todo_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.owner_todo.title)
+        self.assertNotContains(response, self.other_todo.title)
+
+    def test_superuser_cbv_list_sees_all_todos(self):
+        self.client.login(username="cbv_admin", password="StrongPass123!")
+
+        response = self.client.get(reverse("cbv_todo_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.owner_todo.title)
+        self.assertContains(response, self.other_todo.title)
+
+    def test_cbv_search_and_pagination(self):
+        self.login()
+        Todo.objects.create(
+            title="CBV 장보기",
+            description="우유 구매",
+            start_date=date(2026, 3, 21),
+            end_date=date(2026, 3, 21),
+            user=self.owner,
+        )
+
+        response = self.client.get(reverse("cbv_todo_list"), {"q": "회의록"})
+        self.assertContains(response, self.owner_todo.title)
+        self.assertNotContains(response, "CBV 장보기")
+
+        for index in range(11):
+            Todo.objects.create(
+                title=f"CBV 페이지 {index}",
+                description="paginate",
+                start_date=date(2026, 3, 19) + timedelta(days=index),
+                end_date=date(2026, 3, 20) + timedelta(days=index),
+                user=self.owner,
+            )
+
+        page2 = self.client.get(reverse("cbv_todo_list"), {"page": 2})
+        self.assertEqual(page2.status_code, 200)
+        self.assertEqual(page2.context["page_obj"].number, 2)
+
+    def test_owner_can_view_cbv_detail(self):
+        self.login()
+
+        response = self.client.get(
+            reverse("cbv_todo_detail", kwargs={"pk": self.owner_todo.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.owner_todo.title)
+
+    def test_user_cannot_view_another_users_cbv_detail(self):
+        self.login()
+
+        response = self.client.get(
+            reverse("cbv_todo_detail", kwargs={"pk": self.other_todo.pk})
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_valid_cbv_create_redirects_to_cbv_detail(self):
+        self.login()
+        payload = {
+            "title": "CBV 신규",
+            "description": "생성 테스트",
+            "start_date": "2026-03-22",
+            "end_date": "2026-03-23",
+        }
+
+        response = self.client.post(reverse("cbv_todo_create"), payload)
+
+        created = Todo.objects.get(title="CBV 신규")
+        self.assertRedirects(
+            response,
+            reverse("cbv_todo_detail", kwargs={"pk": created.pk}),
+        )
+        self.assertEqual(created.user, self.owner)
+
+    def test_cbv_update_redirects_to_cbv_detail(self):
+        self.login()
+
+        response = self.client.post(
+            reverse("cbv_todo_update", kwargs={"pk": self.owner_todo.pk}),
+            {
+                "title": "CBV 수정됨",
+                "description": "업데이트",
+                "start_date": "2026-03-19",
+                "end_date": "2026-03-22",
+                "is_completed": "on",
+            },
+        )
+
+        self.owner_todo.refresh_from_db()
+        self.assertRedirects(
+            response,
+            reverse("cbv_todo_detail", kwargs={"pk": self.owner_todo.pk}),
+        )
+        self.assertEqual(self.owner_todo.title, "CBV 수정됨")
+        self.assertTrue(self.owner_todo.is_completed)
+
+    def test_user_cannot_update_another_users_cbv_todo(self):
+        self.login()
+
+        response = self.client.post(
+            reverse("cbv_todo_update", kwargs={"pk": self.other_todo.pk}),
+            {
+                "title": "침범",
+                "description": "x",
+                "start_date": "2026-03-19",
+                "end_date": "2026-03-20",
+            },
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_cbv_delete_get_renders_confirmation(self):
+        self.login()
+
+        response = self.client.get(
+            reverse("cbv_todo_delete", kwargs={"pk": self.owner_todo.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "할 일 삭제")
+
+    def test_cbv_delete_post_redirects_to_cbv_list(self):
+        self.login()
+
+        response = self.client.post(
+            reverse("cbv_todo_delete", kwargs={"pk": self.owner_todo.pk})
+        )
+
+        self.assertRedirects(response, reverse("cbv_todo_list"))
+        self.assertFalse(Todo.objects.filter(pk=self.owner_todo.pk).exists())
+
+    def test_user_cannot_delete_another_users_cbv_todo(self):
+        self.login()
+
+        response = self.client.post(
+            reverse("cbv_todo_delete", kwargs={"pk": self.other_todo.pk})
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(Todo.objects.filter(pk=self.other_todo.pk).exists())
