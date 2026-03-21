@@ -1,11 +1,10 @@
-{% extends "todo/base.html" %}
+{% extends "todo/layouts/page_shell.html" %}
 
 {% block title %}Task Detail - Awesome Todo List{% endblock %}
 
-{% block body_class %}flex items-center justify-center{% endblock %}
+{% block page_max_width %}max-w-2xl w-full mx-auto relative z-10{% endblock %}
 
-{% block content %}
-    <div class="max-w-2xl w-full mx-auto relative z-10">
+{% block page_inner %}
         <!-- Main Card -->
         <main class="glass-card rounded-3xl overflow-hidden shadow-2xl ring-1 ring-slate-900/5">
             <!-- Card Header (Back Button & Status) -->
@@ -100,5 +99,4 @@
                 </div>
             </div>
         </main>
-    </div>
 {% endblock %}

@@ -1,9 +1,8 @@
-{% extends "todo/base.html" %}
+{% extends "todo/layouts/page_shell.html" %}
 
 {% block title %}Delete Task{% endblock %}
 
-{% block content %}
-<div class="max-w-xl w-full mx-auto relative z-10">
+{% block page_inner %}
     <main class="glass-card rounded-3xl overflow-hidden shadow-2xl ring-1 ring-slate-900/5 p-8">
         <h1 class="text-xl font-bold text-slate-900 mb-2">할 일 삭제</h1>
         <p class="text-slate-600 mb-6">정말 <strong>{{ object.title }}</strong>을(를) 삭제할까요?</p>
@@ -15,5 +14,4 @@
             </div>
         </form>
     </main>
-</div>
 {% endblock %}
