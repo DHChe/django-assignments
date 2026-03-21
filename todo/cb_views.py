@@ -13,7 +13,6 @@ def _user_can_access_todo(user, todo):
 
 class TodoListView(LoginRequiredMixin, ListView):
     model = Todo
-    context_object_name = "data"
     template_name = "todo_list.html"
     paginate_by = 10
     ordering = ("-created_at",)
@@ -39,7 +38,6 @@ class TodoListView(LoginRequiredMixin, ListView):
 
 class TodoDetailView(LoginRequiredMixin, DetailView):
     model = Todo
-    context_object_name = "data"
     template_name = "todo_info.html"
 
     def get_object(self, queryset=None):
@@ -50,6 +48,7 @@ class TodoDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.pop("object", None)
         context.update(self.object.__dict__)
         return context
 

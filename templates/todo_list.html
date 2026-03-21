@@ -1,9 +1,12 @@
-{% extends "todo/base.html" %}
+{% extends "todo/layouts/page_shell.html" %}
 
 {% block title %}Awesome Todo List{% endblock %}
 
-{% block content %}
-    <div class="max-w-3xl mx-auto relative z-10 space-y-8">
+{% block page_body_class %}{% endblock %}
+
+{% block page_max_width %}max-w-3xl mx-auto relative z-10 space-y-8{% endblock %}
+
+{% block page_inner %}
         <!-- Header Section -->
         <header class="text-center mb-12">
             <div class="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-sm mb-5 ring-1 ring-slate-900/5 transform transition hover:scale-105 duration-300">
@@ -19,13 +22,12 @@
 
         <!-- Main Card -->
         <main class="glass-card rounded-3xl overflow-hidden shadow-xl ring-1 ring-slate-900/5">
-            {% if user.is_authenticated %}
             <!-- Card Header -->
             <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white/60 backdrop-blur-md">
                 <div class="flex items-center gap-3">
                     <h2 class="text-xl font-bold text-slate-800">Tasks</h2>
                     <span class="bg-brand-100 text-brand-700 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
-                        {{ data|length }}
+                        {{ page_obj.paginator.count }}
                     </span>
                 </div>
                 <!-- Optional Date Display -->
@@ -42,8 +44,7 @@
 
             <!-- Task List -->
             <ul class="divide-y divide-slate-100 bg-white/40">
-                {% if data %}
-                    {% for item in data %}
+                {% for item in page_obj %}
                     <li class="todo-item group cursor-pointer relative" onclick="window.location.href='{% url 'cbv_todo_detail' item.pk %}'">
                         <div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <div class="px-8 py-5 flex items-center justify-between">
@@ -69,8 +70,7 @@
                             </div>
                         </div>
                     </li>
-                    {% endfor %}
-                {% else %}
+                {% empty %}
                     <!-- Empty State -->
                     <div class="px-8 py-20 text-center flex flex-col items-center justify-center">
                         <div class="w-24 h-24 bg-gradient-to-tr from-brand-50 to-purple-50 rounded-full flex items-center justify-center mb-5 ring-1 ring-slate-900/5 shadow-inner">
@@ -85,30 +85,7 @@
                             </span>
                         </div>
                     </div>
-                {% endif %}
+                {% endfor %}
             </ul>
-            {% else %}
-            <!-- 로그인 유도 메시지 -->
-            <div class="px-8 py-20 text-center flex flex-col items-center justify-center">
-                <div class="w-24 h-24 bg-gradient-to-tr from-amber-50 to-orange-50 rounded-full flex items-center justify-center mb-5 ring-1 ring-slate-900/5 shadow-inner">
-                    <i class="fa-solid fa-lock text-4xl text-amber-500"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-slate-800 mb-3">로그인이 필요합니다</h3>
-                <p class="text-slate-500 max-w-md mx-auto leading-relaxed mb-8">
-                    Todo 리스트를 확인하려면 로그인하거나 회원가입을 진행해 주세요.
-                </p>
-                <div class="flex flex-wrap items-center justify-center gap-4">
-                    <a href="{% url 'signup' %}" class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-slate-900 rounded-full hover:bg-slate-800 transition-colors shadow-sm">
-                        <i class="fa-solid fa-user-plus"></i>
-                        회원가입
-                    </a>
-                    <a href="{% url 'login' %}" class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors shadow-sm">
-                        <i class="fa-solid fa-right-to-bracket"></i>
-                        로그인
-                    </a>
-                </div>
-            </div>
-            {% endif %}
         </main>
-    </div>
 {% endblock %}

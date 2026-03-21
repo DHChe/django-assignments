@@ -9,22 +9,17 @@ from django.db.models import Q
 from django.views.decorators.http import require_POST
 
 
+@login_required
 def todo_list(request):
     q = request.GET.get("q", "").strip()
-    page_obj = None
-    if request.user.is_authenticated:
-        todo_queryset = Todo.objects.filter(user=request.user).order_by("created_at")
-        if q:
-            todo_queryset = todo_queryset.filter(Q(title__icontains=q) | Q(description__icontains=q))
-        paginator = Paginator(todo_queryset, 10)
-        page_number = request.GET.get("page")
-        page_obj = paginator.get_page(page_number)
-        data = page_obj.object_list
-    else:
-        data = []
+    todo_queryset = Todo.objects.filter(user=request.user).order_by("created_at")
+    if q:
+        todo_queryset = todo_queryset.filter(Q(title__icontains=q) | Q(description__icontains=q))
+    paginator = Paginator(todo_queryset, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        "data": data,
         "page_obj": page_obj,
         "q": q,
     }

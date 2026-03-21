@@ -1,0 +1,8 @@
+{% extends "todo/base.html" %}
+{# 공통 페이지 래퍼: 최대 너비·세로 정렬을 한곳에서 관리합니다. #}
+{% block body_class %}{% block page_body_class %}flex items-center justify-center{% endblock %}{% endblock %}
+{% block content %}
+<div class="{% block page_max_width %}max-w-xl w-full mx-auto relative z-10{% endblock %}">
+    {% block page_inner %}{% endblock %}
+</div>
+{% endblock %}
