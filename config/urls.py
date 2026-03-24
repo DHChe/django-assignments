@@ -33,7 +33,7 @@ urlpatterns = [
     path("accounts/login/", login_view, name="login"),
     path("accounts/logout/", LogoutView.as_view(), name="logout"),
     path("accounts/signup/", signup, name="signup"),
-    path("accounts/", include("django.contrib.auth.urls")),
+
 ]
 
 
