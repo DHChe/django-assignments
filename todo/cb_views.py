@@ -1,10 +1,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from todo.models import Todo
+from todo.forms import CommentForm
+from todo.models import Todo, Comment
 
 
 def _user_can_access_todo(user, todo):
@@ -50,6 +53,13 @@ class TodoDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context.pop("object", None)
         context.update(self.object.__dict__)
+        context["comment_form"] = CommentForm()
+
+        comments = self.object.comments.order_by("-created_at")
+        paginator = Paginator(comments, 5)
+        page = self.request.GET.get("page")
+        context["page_obj"] = paginator.get_page(page)
+
         return context
 
 
@@ -88,6 +98,48 @@ class TodoDeleteView(LoginRequiredMixin, DeleteView):
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
         if not _user_can_access_todo(self.request.user, obj):
+            raise Http404()
+        return obj
+
+    def get_success_url(self):
+        return reverse("cbv_todo_list")
+
+
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    model = Comment
+    fields = ("message",)
+    pk_url_kwarg = "todo_id"
+    template_name = "todo_info.html"
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.todo = get_object_or_404(Todo, pk=self.kwargs["todo_id"])
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("cbv_todo_detail", kwargs={"pk": self.kwargs["todo_id"]})
+
+
+class CommentUpdateView(LoginRequiredMixin, UpdateView):
+    model = Comment
+    fields = ("message",)
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if not (self.request.user.is_superuser or obj.user == self.request.user):
+            raise Http404()
+        return obj
+
+    def get_success_url(self):
+        return reverse("cbv_todo_detail", kwargs={"pk": self.object.todo.pk})
+
+
+class CommentDeleteView(LoginRequiredMixin, DeleteView):
+    model = Comment
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if not (self.request.user.is_superuser or obj.user == self.request.user):
             raise Http404()
         return obj
 
